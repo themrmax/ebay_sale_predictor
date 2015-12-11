@@ -1,1 +1,3 @@
 *.pdf
+*.pkl
+__pycache__*

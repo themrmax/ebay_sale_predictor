@@ -1,17 +1,16 @@
-import numpy as np
-from scipy import interp
-import matplotlib.pyplot as plt
 
-from sklearn import svm, datasets
-from sklearn.metrics import roc_curve, auc
-from sklearn.cross_validation import StratifiedKFold
+def save_cv_roc(X, y, classifier):
+    """
+    This is taken from the scikit-learn doc page
+    http://scikit-learn.org/stable/auto_examples/model_selection/plot_roc_crossval.html
+    """
+    import numpy as np
+    from scipy import interp
+    import matplotlib.pyplot as plt
 
-def save_cv_roc(data, model):
-    X = data.drop('sold_ind',1).values
-    y = data['sold_ind']
-    roc_auc_cv = np.mean([np.mean(cross_val_score(classifier,X,y, scoring = 'roc_auc', cv = StratifiedKFold(y, n_folds = 5, shuffle=True))) for i in range(5)])
-    print("roc_auc: {}".format(roc_auc_cv))
-    #precision_cv = np.mean(cross_val_score(model,X,y, scoring = 'precision', cv = StratifiedKFold(y, n_folds = 10, shuffle=True)))
+    from sklearn import svm, datasets
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.cross_validation import StratifiedKFold
     cv = StratifiedKFold(y, n_folds=3)
     mean_tpr = 0.0
     mean_fpr = np.linspace(0, 1, 100)
