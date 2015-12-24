@@ -32,21 +32,25 @@ def munge_data(raw_data):
                               price = lambda x: pd.to_numeric(x.price))
                       .assign(sold_ind = lambda x: x.n_bids != 0)
                       .drop_duplicates()
+                      .drop(['n_bids'],1)
                       .reset_index(drop=True))
     return munged
 
 
-def vectorise_data(raw_data, tf_min=0.01, tf_max=.9):
+def vectorise_ad_text(raw_data, tf_min=0.01, tf_max=.9):
     word_counts = pd.Series((' '.join(raw_data.ad_title).split())).value_counts()
     lexicon = word_counts[word_counts.between(tf_min*len(raw_data),tf_max*len(raw_data))].index
     indicators = pd.DataFrame({w: raw_data.ad_title.str.contains(w) for w in lexicon})
-    vectorised_data = pd.concat([raw_data, indicators],1).drop(['ad_title','n_bids'],1)
+    vectorised_data = pd.concat([raw_data, indicators],1).drop(['ad_title'],1)
     return vectorised_data
 
-
-def train_model(vectorised_data, **kwds):
+def get_training_data_arrays(vectorised_data):
     X = data.drop('sold_ind',1).values
     y = data['sold_ind']
+    return X,y
+
+
+def train_model(X, y, **kwds):
     classifier = GradientBoostingClassifier(**kwds)
     classifier.fit(X,y)
     return classifier
@@ -63,7 +67,7 @@ def score_ad(classifier, lexicon, price, ad_title):
     return classifier.predict_proba(X)[0][1]
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'This is a toy that was inspired by me getting bored with sifting through crap ads on ebay. It is a Python program which scrapes and prepares a dataset from ebay, trains a gradient boosted tree-ensemble model using scikit-learn, and then can predict the probability of the listing ending in a sale. The performance of the model is actually quite good, considering that it is only trained on the ad title and price. All the dependencies are included in the Anaconda distribution of Python 3.4. Example usage: `python ebay_sale_predictor.py --train --keywords "road+bicycle"` then `python ebay_sale_predictor.py --score --ad-title "vintage mens shimano" --price 900`') 
+    parser = argparse.ArgumentParser(description = 'This is a toy that was inspired by me getting bored with sifting through crap ads on ebay. It is a Python program which scrapes and prepares a dataset from ebay, trains a gradient boosted tree-ensemble model using scikit-learn, and then can predict the probability of the listing ending in a sale. The performance of the model is actually quite good, considering that it is only trained on the ad title and price. All the dependencies are included in the Anaconda distribution of Python 3.4. Example usage: `python ebay_sale_predictor.py --train --keywords "road+bicycle"` then `python ebay_sale_predictor.py --score --ad-title "vintage mens shimano" --price 900`')
     parser.add_argument("--train", help="train the model",
                     action="store_true")
     parser.add_argument("--score", help="score an ad",
@@ -81,14 +85,14 @@ if __name__ == "__main__":
             raw_data = pd.concat(parse_search_results(get_raw_search_results(search_term, page_number))
                      for page_number in range(1, n_pages + 1))
             munged_data = munge_data(raw_data)
-            data = vectorise_data(munged_data, tf_min=0.04, tf_max=0.8)
-            classifier = train_model(data, n_estimators=150, min_samples_leaf=10, max_depth=5)
+            data = vectorise_ad_text(munged_data, tf_min=0.04, tf_max=0.8)
+            X,y = get_training_data_arrays(data)
+            classifier = train_model(X,y, n_estimators=150, min_samples_leaf=10, max_depth=5)
             lexicon = data.columns[2:]
+
             with open('classifier.pkl','wb') as f:
                 pickle.dump((classifier, lexicon), f)
 
-            X = data.drop('sold_ind',1).values
-            y = data['sold_ind']
             roc_auc_cv = np.mean(cross_val_score(classifier,X,y, scoring = 'roc_auc', cv = StratifiedKFold(y, n_folds = 10)))
             print("roc_auc: {}".format(roc_auc_cv))
 
