@@ -44,9 +44,9 @@ def vectorise_ad_text(raw_data, tf_min=0.01, tf_max=.9):
     vectorised_data = pd.concat([raw_data, indicators],1).drop(['ad_title'],1)
     return vectorised_data
 
-def get_training_data_arrays(vectorised_data):
-    X = data.drop('sold_ind',1).values
-    y = data['sold_ind']
+def get_training_data_arrays(data):
+    X = data.drop('sold_ind',1).values.astype(np.float32)
+    y = data['sold_ind'].values.astype(np.float32)
     return X,y
 
 
