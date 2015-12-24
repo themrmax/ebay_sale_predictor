@@ -15,5 +15,5 @@ ebay_sale_predictor.py --score --ad-title "vintage mens shimano" --price 900`
 	  --keywords KEYWORDS  train mode only: search keywords used to build training
 			       dataset, use + for spaces
 	  --ad-title AD_TITLE  score mode only: ad text to be used for scoring
-	  --price PRICE        train mode only: price of ad to be used for scoring
+	  --price PRICE        score mode only: price of ad to be used for scoring
 
