@@ -1,19 +1,23 @@
-This is a toy that was inspired by me getting bored with sifting through crap
-ads on ebay. It is a Python program which scrapes and prepares a dataset from
-ebay, trains a gradient boosted tree-ensemble model using scikit-learn, and
-then can predict the probability of the listing ending in a sale. The
-performance of the model is actually quite good, considering that it is only
-trained on the ad title and price. All the dependencies are included in the
-Anaconda distribution of Python 3.4. Example usage: `python
-ebay_sale_predictor.py --train --keywords "road+bicycle"` then `python
-ebay_sale_predictor.py --score --ad-title "vintage mens shimano" --price 900`
+#ebay sale predictor
 
-	optional arguments:
-	  -h, --help           show this help message and exit
-	  --train              train the model
-	  --score              score an ad
-	  --keywords KEYWORDS  train mode only: search keywords used to build training
-			       dataset, use + for spaces
-	  --ad-title AD_TITLE  score mode only: ad text to be used for scoring
-	  --price PRICE        score mode only: price of ad to be used for scoring
+A little toy project which scrapes and prepares a dataset from
+ebay, trains a scikit-learn Gradient Boosting Classifier on the price and ad title, and
+tries to predict the probability of the listing ending in a sale. The
+performance of the model is actually quite good, considering that it is only
+trained on the ad title and price. 
+
+## Dependencies 
+
+All the dependencies should be included in theAnaconda distribution of Python 3.4. 
+
+## Test
+
+    nosetests
+
+## Example usage 
+
+    python ebay_sale_predictor.py --train --keywords "road+bicycle"
+    python ebay_sale_predictor.py --score --ad-title "vintage mens shimano" --price 900
+
+
 
